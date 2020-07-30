@@ -1,4 +1,5 @@
 import 'package:coffe_time/models/user.dart';
+import 'package:coffe_time/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
@@ -28,18 +29,34 @@ class AuthService {
   }
 
   // sign in email
-
-  // register
-  Future registerWithEmailAndPassword(String email, String password) async{
+  Future signInWithEmailAndPassword(String email, String password) async {
     try {
-      AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      AuthResult result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       FirebaseUser user = result.user;
       return _userFromFireBaseUser(user);
     } catch (e) {
       print(e.toString());
       return null;
     }
+  }
 
+  // register
+  Future registerWithEmailAndPassword(String email, String password) async {
+    try {
+      AuthResult result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      FirebaseUser user = result.user;
+
+      //create a new document for the user with he uid
+      await DatabaseService(uid: user.uid)
+          .updateUserData('0', 'new crew member', 100);
+
+      return _userFromFireBaseUser(user);
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
   }
 
   // log out
